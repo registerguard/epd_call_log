@@ -13,6 +13,7 @@ def main(backfill_date = ''):
     import urllib2
     
     from bs4 import BeautifulSoup
+    from dateutil.parser import parse
     
     if len(sys.argv) > 1:
         my_eight_digit_date = sys.argv[1]
@@ -49,18 +50,33 @@ def main(backfill_date = ''):
     
     body = soup.findAll('tbody')[0]
     rows = body.findAll('tr')
-    for tr in rows:
-        cols = tr.findAll('td')
-        call_time, dispatch_time, incident_desc, officers, disposition, event_number, location, priority, case = cols[0].string, cols[1].string, cols[2].string, cols[3].string, cols[4].string, cols[5].string, cols[6].string, cols[7].string, cols[8].string
-        
-        print '''call_time: %s
-        dispatch_time: %s
-        incident_desc: %s 
-        officers: %s 
-        disposition: %s 
-        event_number: %s 
-        location: %s 
-        priority: %s 
-        case: %s ''' % (call_time, dispatch_time, incident_desc, officers, disposition, event_number, location, priority, case)
+    call_count = len(rows)
+    
+    if call_count != 250:
+        for tr in rows:
+            cols = tr.findAll('td')
+            call_time, dispatch_time, incident_desc, officers, disposition, event_number, location, priority, case = \
+            cols[0].string, cols[1].string, cols[2].string, cols[3].string, cols[4].string, cols[5].string, cols[6].string, cols[7].string, cols[8].string
+            
+            # use dateutils to convert datetime strings to datetime objects
+            call_time = parse(call_time)
+            dispatch_time = parse(dispatch_time)
+            
+            # space out, replace '/' on locations, i.e. 'W BROADWAY/OLIVE ST, EUG'
+            # TO DO: still need to clean up city abbreviations
+            location = location.replace('/', ' & ')
+            
+            print '''call_time: %s
+            dispatch_time: %s
+            incident_desc: %s 
+            officers: %s 
+            disposition: %s 
+            event_number: %s 
+            location: %s 
+            priority: %s 
+            case: %s ''' % (call_time, dispatch_time, incident_desc, officers, disposition, event_number, location, priority, case)
+    else:
+        # TO DO: What to do if it's a truncated, 250-item count ... 
+        print "Truncated results"
 
 if __name__ == "__main__" : main()
