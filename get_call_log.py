@@ -17,7 +17,7 @@ def main(backfill_date = ''):
     from bs4 import BeautifulSoup
     from dateutil.parser import parse
     
-    sys.path.append('/rgcalendar/oper/projects_root')
+    sys.path.append('/rgcalendar/oper')
     environ['DJANGO_SETTINGS_MODULE'] = 'projects_root.settings'
     from projects_root.epd.models import Incident
     
@@ -91,22 +91,22 @@ def main(backfill_date = ''):
             # Changed get_or_create lookup to 'Event number' from 'ID', as EPD started re-using 'ID's Sept. 11, 2009.
             #
             Incident_instance, created = Incident.objects.get_or_create(
-                event_number = incident_dict['Event Number'],
+                event_number = event_number,
                 defaults = {
-                'police_response': convert_timestamp(incident_dict['Police Response']),
-                'incident_description': incident_dict['Incident Desc'],
-                'ofc': incident_dict['OFC'],
-                'received': convert_timestamp(incident_dict['Received']),
-                'disp': incident_dict['Disp'],
-                'location': incident_dict['Location'],
-                'pd_id': incident_dict['ID'],
-                'priority': incident_dict['Priority'],
-                'case_no': incident_dict['Case No'],
-                'comment': incident_dict['comment'],
+                'police_response': dispatch_time,
+                'incident_description': incident_desc,
+                'ofc': officers,
+                'received': call_time,
+                'disp': disposition,
+                'location': location,
+                'pd_id': event_number,
+                'priority': priority,
+                'case_no': case,
+                'comment': '',
                 }
             )
             if created:
-                if incident_dict['Location'] and not incident_dict['Location'].count('EUGENE AREA'):
+                if location and not location.count('EUGENE AREA'):
                     '''
                     Sept. 11, 2013: Switching from v2 to v3 Google geocoder.
                     https://github.com/geopy/geopy/blob/master/docs/google_v3_upgrade.md
@@ -115,7 +115,7 @@ def main(backfill_date = ''):
                     '''
                     g = geocoders.GoogleV3()
                     try:
-                        place, (lat, lng) = g.geocode(incident_dict['Location'] + ', OR')
+                        place, (lat, lng) = g.geocode(location + ', OR')
                     except (ValueError, GQueryError):
                         pass # no address found
                     Incident_instance.lat = str(lat)
