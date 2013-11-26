@@ -8,6 +8,7 @@ sys.path.append('/rgcalendar/oper')
 sys.path.append('/rgcalendar/oper/projects_root')
 environ['DJANGO_SETTINGS_MODULE'] = 'projects_root.settings'
 from projects_root.epd.models import Incident
+from django.db.utils import DatabaseError
 from geopy import geocoders
 from geopy.geocoders.google import GQueryError
 
@@ -91,13 +92,13 @@ def main(backfill_date = ''):
             if priority.strip() == 'P':
                 priority = 6
             else:
-                priority = unicode(priority)
+                priority = int(unicode(priority))
             
             # strip out alpha prefixes on officers, introduced in Nov. 22, 2013 
             # system changeover.
             if officers:
                 officers = officers.rstrip()
-                officers = re.sub('EPD|V|CAH', '', officers)
+                officers = re.sub('EPD|V|CAH|-9999     ', '', officers)
                 officers = officers.split('     ')
                 # remove duplicate badge numbers
                 officers = list(set(officers))
@@ -133,21 +134,25 @@ def main(backfill_date = ''):
             #
             # Changed get_or_create lookup to 'Event number' from 'ID', as EPD started re-using 'ID's Sept. 11, 2009.
             #
-            Incident_instance, created = Incident.objects.get_or_create(
-                event_number = event_number,
-                defaults = {
-                'police_response': dispatch_time,
-                'incident_description': unicode(incident_desc),
-                'ofc': officers,
-                'received': call_time,
-                'disp': unicode(disposition),
-                'location': location,
-                'pd_id': unicode(event_number),
-                'priority': priority,
-                'case_no': unicode(case),
-                'comment': '',
-                }
-            )
+            try:
+                Incident_instance, created = Incident.objects.get_or_create(
+                    event_number = event_number,
+                    defaults = {
+                    'police_response': dispatch_time,
+                    'incident_description': unicode(incident_desc),
+                    'ofc': officers,
+                    'received': call_time,
+                    'disp': unicode(disposition),
+                    'location': location,
+                    'pd_id': unicode(event_number),
+                    'priority': priority,
+                    'case_no': unicode(case),
+                    'comment': '',
+                    }
+                )
+            except DatabaseError:
+                print 'TOO MANY COPS! >>>', call_time, location, officers
+                
             if created:
                 if location and not location.count('EUGENE AREA'):
                     '''
