@@ -12,7 +12,7 @@ from django.db.utils import DatabaseError
 from geopy import geocoders
 from geopy.geocoders.google import GQueryError
 
-def main(backfill_date = ''):
+def main(backfill_date = None):
     '''
     Parse police call log Web page prodcued by from SunGard Records Management 
     System/Computer Aided Dispatch system (RMS/CAD) used by Eugene and 
@@ -89,16 +89,20 @@ def main(backfill_date = ''):
             # of 'P', but it's stored in an integer field, so this doesn't fly. 
             # For consistency, a hack to covert it to 6, which is what it was 
             # in previous EPD system.
+            priority = unicode(priority)
             if priority.strip() == 'P':
                 priority = 6
-            else:
-                priority = int(unicode(priority))
+            elif priority:
+                try:
+                    priority = int(unicode(priority))
+                except ValueError:
+                    priority = None
             
             # strip out alpha prefixes on officers, introduced in Nov. 22, 2013 
             # system changeover.
             if officers:
                 officers = officers.rstrip()
-                officers = re.sub('EPD|V|CAH|-9999     ', '', officers)
+                officers = re.sub('EPD|V|CAH|-9999     ', u'', officers)
                 officers = officers.split('     ')
                 # remove duplicate badge numbers
                 officers = list(set(officers))
@@ -150,7 +154,7 @@ def main(backfill_date = ''):
                     'comment': '',
                     }
                 )
-            except DatabaseError:
+            except (DatabaseError, ValueError):
                 print 'TOO MANY COPS! >>>', call_time, location, officers
                 
             if created:
