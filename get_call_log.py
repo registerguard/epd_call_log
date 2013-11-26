@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from os import environ
+import sys
+
+sys.path.append('/rgcalendar/oper')
+sys.path.append('/rgcalendar/oper/projects_root')
+environ['DJANGO_SETTINGS_MODULE'] = 'projects_root.settings'
+from projects_root.epd.models import Incident
+from geopy import geocoders
+from geopy.geocoders.google import GQueryError
 
 def main(backfill_date = ''):
     '''
@@ -8,18 +19,12 @@ def main(backfill_date = ''):
     '''
     
     import datetime
-    from os import environ
     import re
-    import sys
     import urllib
     import urllib2
     
     from bs4 import BeautifulSoup
     from dateutil.parser import parse
-    
-    sys.path.append('/rgcalendar/oper')
-    environ['DJANGO_SETTINGS_MODULE'] = 'projects_root.settings'
-    from projects_root.epd.models import Incident
     
     if len(sys.argv) > 1:
         my_eight_digit_date = sys.argv[1]
@@ -65,8 +70,10 @@ def main(backfill_date = ''):
             cols[0].string, cols[1].string, cols[2].string, cols[3].string, cols[4].string, cols[5].string, cols[6].string, cols[7].string, cols[8].string
             
             # use dateutils to convert datetime strings to datetime objects
-            if call_time: call_time = parse(call_time)
-            if dispatch_time: dispatch_time = parse(dispatch_time)
+            if call_time:
+                call_time = parse(call_time)
+            if dispatch_time:
+                dispatch_time = parse(dispatch_time)
             
             # space out, replace '/' on locations, i.e. 'W BROADWAY/OLIVE ST, EUG'
             location = location.replace('/', ' & ')
@@ -77,6 +84,42 @@ def main(backfill_date = ''):
             location = re.sub('(HAR) $', '\\1RISBURG ', location)
             location = re.sub('(VEN) $', '\\1ETA ', location)
             
+            # new system (as of Nov. 22, 2013) has a priority 
+            # of 'P', but it's stored in an integer field, so this doesn't fly. 
+            # For consistency, a hack to covert it to 6, which is what it was 
+            # in previous EPD system.
+            if priority.strip() == 'P':
+                priority = 6
+            else:
+                priority = unicode(priority)
+            
+            # strip out alpha prefixes on officers, introduced in Nov. 22, 2013 
+            # system changeover.
+            if officers:
+                officers = officers.rstrip()
+                officers = re.sub('EPD|V|CAH', '', officers)
+                officers = officers.split('     ')
+                # remove duplicate badge numbers
+                officers = list(set(officers))
+                officers = ','.join(officers)
+            else:
+               # officers can't be None
+               officers = ''
+            
+            # 
+            # From http://www.crummy.com/software/BeautifulSoup/bs4/doc/
+            # 
+            # " ... If you want to use a NavigableString outside of Beautiful 
+            # Soup, you should call unicode() on it to turn it into a normal 
+            # Python Unicode string. If you don’t, your string will carry 
+            # around a reference to the entire Beautiful Soup parse tree, even 
+            # when you’re done using Beautiful Soup. This is a big waste of 
+            # memory. ... "
+            incident_desc = unicode(incident_desc)
+            disposition = unicode(disposition)
+            event_number = unicode(event_number)
+            case = unicode(case)
+            
             print '''call_time: %s
             dispatch_time: %s
             incident_desc: %s 
@@ -85,7 +128,7 @@ def main(backfill_date = ''):
             event_number: %s 
             location: %s 
             priority: %s 
-            case: %s ''' % (call_time, dispatch_time, incident_desc, officers, disposition, event_number, location, priority, case)
+            case: %s ''' % (type(call_time), type(dispatch_time), type(incident_desc), type(officers), type(disposition), type(event_number), type(location), type(priority), type(case))
             
             #
             # Changed get_or_create lookup to 'Event number' from 'ID', as EPD started re-using 'ID's Sept. 11, 2009.
@@ -94,14 +137,14 @@ def main(backfill_date = ''):
                 event_number = event_number,
                 defaults = {
                 'police_response': dispatch_time,
-                'incident_description': incident_desc,
+                'incident_description': unicode(incident_desc),
                 'ofc': officers,
                 'received': call_time,
-                'disp': disposition,
+                'disp': unicode(disposition),
                 'location': location,
-                'pd_id': event_number,
+                'pd_id': unicode(event_number),
                 'priority': priority,
-                'case_no': case,
+                'case_no': unicode(case),
                 'comment': '',
                 }
             )
