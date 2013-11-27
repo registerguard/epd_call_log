@@ -10,7 +10,7 @@ environ['DJANGO_SETTINGS_MODULE'] = 'projects_root.settings'
 from projects_root.epd.models import Incident
 from django.db.utils import DatabaseError
 from geopy import geocoders
-from geopy.geocoders.google import GQueryError
+from geopy.geocoders.googlev3 import GQueryError
 
 def main(backfill_date = None):
     '''
@@ -106,7 +106,7 @@ def main(backfill_date = None):
                 officers = officers.split('     ')
                 # remove duplicate badge numbers
                 officers = list(set(officers))
-                officers = ','.join(officers)
+                officers = ', '.join(officers)
             else:
                # officers can't be None
                officers = ''
@@ -133,17 +133,18 @@ def main(backfill_date = None):
             event_number: %s 
             location: %s 
             priority: %s 
-            case: %s ''' % (type(call_time), type(dispatch_time), type(incident_desc), type(officers), type(disposition), type(event_number), type(location), type(priority), type(case))
+            case: %s ''' % (call_time, dispatch_time, incident_desc, officers, disposition, event_number, location, priority, case)
             
             #
             # Changed get_or_create lookup to 'Event number' from 'ID', as EPD started re-using 'ID's Sept. 11, 2009.
             #
             try:
                 Incident_instance, created = Incident.objects.get_or_create(
-                    event_number = event_number,
+                    event_number = event_number, 
+                    incident_description = unicode(incident_desc), 
                     defaults = {
                     'police_response': dispatch_time,
-                    'incident_description': unicode(incident_desc),
+#                     'incident_description': unicode(incident_desc),
                     'ofc': officers,
                     'received': call_time,
                     'disp': unicode(disposition),
@@ -154,25 +155,27 @@ def main(backfill_date = None):
                     'comment': '',
                     }
                 )
-            except (DatabaseError, ValueError):
-                print 'TOO MANY COPS! >>>', call_time, location, officers
-                
-            if created:
-                if location and not location.count('EUGENE AREA'):
-                    '''
-                    Sept. 11, 2013: Switching from v2 to v3 Google geocoder.
-                    https://github.com/geopy/geopy/blob/master/docs/google_v3_upgrade.md
+            
+                if created:
+                    if location and not location.count('EUGENE AREA'):
+                        '''
+                        Sept. 11, 2013: Switching from v2 to v3 Google geocoder.
+                        https://github.com/geopy/geopy/blob/master/docs/google_v3_upgrade.md
                     
-                    # g = geocoders.Google('ABQIAAAAipqnSW_ox-DaZp8gNuT_qRQeQVg07lpBkUqRt1DZ_A2Xwczm_BSE7XC4NVMUh0B3nE-UHYsFJrvxUA')
-                    '''
-                    g = geocoders.GoogleV3()
-                    try:
-                        place, (lat, lng) = g.geocode(location + ', OR')
-                    except (ValueError, GQueryError):
-                        pass # no address found
-                    Incident_instance.lat = str(lat)
-                    Incident_instance.lng = str(lng)
-                    Incident_instance.save()
+                        # g = geocoders.Google('ABQIAAAAipqnSW_ox-DaZp8gNuT_qRQeQVg07lpBkUqRt1DZ_A2Xwczm_BSE7XC4NVMUh0B3nE-UHYsFJrvxUA')
+                        '''
+                        g = geocoders.GoogleV3()
+                        try:
+                            place, (lat, lng) = g.geocode(location + ', OR')
+                        except (ValueError, GQueryError):
+                            pass # no address found
+                        Incident_instance.lat = str(lat)
+                        Incident_instance.lng = str(lng)
+                        Incident_instance.save()
+            
+            except (DatabaseError, ValueError), err:
+                print 'DatabaseError or ValueError >>>', call_time, location, officers
+                print 'Error:', err
         else:
 #                 print 'Ignored', incident_dict['Event Number'], 'No \'Incident Description\''
             pass
