@@ -125,15 +125,15 @@ def main(backfill_date = None):
             event_number = unicode(event_number)
             case = unicode(case)
             
-            print '''call_time: %s
-            dispatch_time: %s
-            incident_desc: %s 
-            officers: %s 
-            disposition: %s 
-            event_number: %s 
-            location: %s 
-            priority: %s 
-            case: %s ''' % (call_time, dispatch_time, incident_desc, officers, disposition, event_number, location, priority, case)
+#             print '''call_time: %s
+#             dispatch_time: %s
+#             incident_desc: %s 
+#             officers: %s 
+#             disposition: %s 
+#             event_number: %s 
+#             location: %s 
+#             priority: %s 
+#             case: %s ''' % (call_time, dispatch_time, incident_desc, officers, disposition, event_number, location, priority, case)
             
             #
             # Changed get_or_create lookup to 'Event number' from 'ID', as EPD started re-using 'ID's Sept. 11, 2009.
