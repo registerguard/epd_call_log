@@ -157,7 +157,7 @@ def main(backfill_date = None):
                 )
             
                 if created:
-                    if location and not location.count('EUGENE AREA'):
+                    if location and not location.count(' I5 NB'):
                         '''
                         Sept. 11, 2013: Switching from v2 to v3 Google geocoder.
                         https://github.com/geopy/geopy/blob/master/docs/google_v3_upgrade.md
