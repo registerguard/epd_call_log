@@ -80,6 +80,7 @@ def main(backfill_date = None):
             location = location.replace('/', ' & ')
             location = location.replace('HWY 99N', 'OR-99')
             
+            location = re.sub('(CRE) $', '\\1SWELL ', location)
             location = re.sub('(EUG) $', '\\1ENE ', location)
             location = re.sub('(SPR) $', '\\1INGFIELD ', location)
             location = re.sub('(HAR) $', '\\1RISBURG ', location)
