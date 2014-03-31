@@ -21,6 +21,7 @@ def main(backfill_date = None):
     
     import datetime
     import re
+    import time
     import urllib
     import urllib2
     
@@ -173,6 +174,15 @@ def main(backfill_date = None):
                         Incident_instance.lat = str(lat)
                         Incident_instance.lng = str(lng)
                         Incident_instance.save()
+                        
+                        # If my_eight_digit_date exists, then we're probably 
+                        # running the script manually, so it's likely to be a 
+                        # bulk data back-fill situation and Google v3 geocoder 
+                        # doesn't care for lots of requests in a burst; it shuts 
+                        # down; so, we insert this time.sleep() bit ...
+                        if my_eight_digit_date:
+                            print 'Saved incident at %s, received %s.' % (place, Incident_instance.received) 
+                            time.sleep(2) 
             
             except (DatabaseError, ValueError), err:
                 print 'DatabaseError or ValueError >>>', call_time, location, officers
