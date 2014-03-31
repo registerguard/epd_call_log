@@ -181,8 +181,8 @@ def main(backfill_date = None):
                         # doesn't care for lots of requests in a burst; it shuts 
                         # down; so, we insert this time.sleep() bit ...
                         if my_eight_digit_date:
-                            print 'Saved incident at %s, received %s.' % (place, Incident_instance.received) 
-                            time.sleep(2) 
+                            print 'Saved incident at %s; received %s.' % (place, Incident_instance.received.strftime('%I:%M %p, %A, %B %d, %Y')) 
+                            time.sleep(1) 
             
             except (DatabaseError, ValueError), err:
                 print 'DatabaseError or ValueError >>>', call_time, location, officers
