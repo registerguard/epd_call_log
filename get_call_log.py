@@ -85,6 +85,10 @@ def main(backfill_date = None, priority_group = None, my_eight_digit_date = None
     if call_count != 250:
         for tr in rows:
             cols = tr.findAll('td')
+# 
+# Sept. 16, 2014; Eugene added a "Map" column to the page we're scraping.
+# Had to increment list item integers
+# 
 #             call_time, dispatch_time, incident_desc, officers, disposition, event_number, location, priority, case = \
 #             cols[0].string, cols[1].string, cols[2].string, cols[3].string, cols[4].string, cols[5].string, cols[6].string, cols[7].string, cols[8].string
             call_time, dispatch_time, incident_desc, officers, disposition, event_number, location, priority, case = \
@@ -208,6 +212,7 @@ def main(backfill_date = None, priority_group = None, my_eight_digit_date = None
                         Incident_instance.lat = str(lat)
                     if lng:
                         Incident_instance.lng = str(lng)
+                    
                     Incident_instance.save()
                     
                     # If my_eight_digit_date exists, then we're probably 
