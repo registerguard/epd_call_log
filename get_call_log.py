@@ -91,8 +91,13 @@ def main(backfill_date = None, priority_group = None, my_eight_digit_date = None
 #
 #             call_time, dispatch_time, incident_desc, officers, disposition, event_number, location, priority, case = \
 #             cols[0].string, cols[1].string, cols[2].string, cols[3].string, cols[4].string, cols[5].string, cols[6].string, cols[7].string, cols[8].string
+# 
+# Morning of May 11, 2017; Eugene dropped "Officers" column from its report.
+# 
+#             call_time, dispatch_time, incident_desc, officers, disposition, event_number, location, priority, case = \
+#             cols[1].string, cols[2].string, cols[3].string, cols[4].string, cols[5].string, cols[6].string, cols[7].string, cols[8].string, cols[9].string
             call_time, dispatch_time, incident_desc, officers, disposition, event_number, location, priority, case = \
-            cols[1].string, cols[2].string, cols[3].string, cols[4].string, cols[5].string, cols[6].string, cols[7].string, cols[8].string, cols[9].string
+            cols[1].string, cols[2].string, cols[3].string, None, cols[4].string, cols[5].string, cols[6].string, cols[7].string, cols[8].string
 
             # use dateutils to convert datetime strings to datetime objects
             if call_time:
