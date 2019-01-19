@@ -197,13 +197,7 @@ def main(backfill_date = None, priority_group = None, my_eight_digit_date = None
                 # To geocode economically, only do so if there's been an
                 # Incident created.
                 if created and location:
-                    '''
-                    Sept. 11, 2013: Switching from v2 to v3 Google geocoder.
-                    https://github.com/geopy/geopy/blob/master/docs/google_v3_upgrade.md
-
-                    # g = geocoders.Google('ABQIAAAAipqnSW_ox-DaZp8gNuT_qRQeQVg07lpBkUqRt1DZ_A2Xwczm_BSE7XC4NVMUh0B3nE-UHYsFJrvxUA')
-                    '''
-                    g = geocoders.GoogleV3()
+                    g = geocoders.Bing('AkT3k27Ym8h7YxSjiAG-N58w4OPm3nR-4miH9y576YvN9QEw5kJTqOcIAy3DBqX6')
                     try:
                         place, (lat, lng) = g.geocode(location + ', OR')
                         geocoded_by = 'Google'
