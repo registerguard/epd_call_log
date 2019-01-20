@@ -200,7 +200,7 @@ def main(backfill_date = None, priority_group = None, my_eight_digit_date = None
                     g = geocoders.Bing('AkT3k27Ym8h7YxSjiAG-N58w4OPm3nR-4miH9y576YvN9QEw5kJTqOcIAy3DBqX6')
                     try:
                         place, (lat, lng) = g.geocode(location + ', OR')
-                        geocoded_by = 'Google'
+                        geocoded_by = 'Bing!'
                     except (ValueError, GQueryError):
                         pass # no address found
                     except GTooManyQueriesError:
